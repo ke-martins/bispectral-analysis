@@ -1,9 +1,9 @@
 # Bispectral-Analysis
 A MATLAB library designed for spectral and bispectral analyses of surface elevation timeseries
 
-Author: Kévin Martins.
+Author: Kévin Martins
 
-Affiliation: UMR 5805 EPOC, CNRS - University of Bordeaux, Allée Geoffroy Saint-Hilaire, F-33615 Pessac, France.
+Affiliation: UMR 5805 EPOC, CNRS - University of Bordeaux, Allée Geoffroy Saint-Hilaire, F-33615 Pessac, France
 
 Email : kevin.martins@u-bordeaux.fr
 
