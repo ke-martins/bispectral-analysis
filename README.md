@@ -1,5 +1,5 @@
 # Bispectral-Analysis
-A MATLAB library designed for spectral and bispectral analyses of surface elevation timeseries
+A MATLAB library designed for spectral and bispectral analyses of surface elevation timeseries.
 
 Author: Kévin Martins
 
@@ -7,9 +7,9 @@ Affiliation: UMR 5805 EPOC, CNRS - University of Bordeaux, Allée Geoffroy Saint
 
 Email : kevin.martins@u-bordeaux.fr
 
-14/09/2020
+Last updated on 2/05/2021
 
-File list:
+Included files:
 
     fun_compute_spectrum.m         --> Compute the power spectral density (psd) of a surface elevation timeseries
 

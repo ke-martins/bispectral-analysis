@@ -1,11 +1,11 @@
 function [ v ] = fun_compute_edof( w , M , N , overlap )
-%	Inputs:
+% Inputs:
 %   w       - window (windowed timeseries of FFT length)
 %   M       - FFT length 
 %   N       - total number of points
 %   overlap - overlap in % used to compute number of new points in each FFT
 %
-%	Outputs:
+% Outputs:
 %   v       - equivalent degrees of freedom in a PSD estimate
 %
 % Notes:
@@ -38,13 +38,13 @@ end
 
 %% fun_compute_rho computes the window autocorrelation function 
 function [ r ] = fun_compute_rho( w , M , k , overlap )
-%	Inputs:
+% Inputs:
 %   w       - window
 %   M       - FFT length 
 %   k       - lag  of  window  correlation 
 %   overlap - overlap in % used to compute number of new points in each FFT 
 %
-%	Outputs:
+% Outputs:
 %   r       - autocorrelation of window
 
   % Initialisation

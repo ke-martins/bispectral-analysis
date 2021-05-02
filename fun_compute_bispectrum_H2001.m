@@ -321,7 +321,7 @@ function [ data ] = fun_compute_bispectrum_H2001( x , fs , nfft , overlap , wind
   % ---------------------- Finalisation ----------------------------
 
   % Number of blocks used to compute PSD
-  data.nblocks      = nblock-1;
+  data.nblocks      = nblock;
   data.nblocks_info = 'Number of blocks used to compute the PSD';
 
   % Equivalent number of degrees of freedom, based on the estimator given in Welch (1967)
@@ -335,7 +335,8 @@ function [ data ] = fun_compute_bispectrum_H2001( x , fs , nfft , overlap , wind
   end
 
   % Computing the 95% confidence interval of the PSD
-  data.P_CI      = privatechi2conf(0.95,fix(data.edof));
+  alpha          = 1-0.95;
+  data.P_CI      = fix(data.edof)./chi2inv([1-alpha/2 alpha/2],fix(data.edof));
   data.P_CI_info = '95% confidence interval of the PSD';
 
   % b95 (Haubrich, 1965)
