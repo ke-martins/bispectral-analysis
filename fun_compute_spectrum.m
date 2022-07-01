@@ -192,13 +192,13 @@ function [ data ] = fun_compute_spectrum ( x , fs , nfft , overlap , wind )
   data.E = 2*data.E(nmid:end)/data.df;
   
   % Number of blocks used to compute PSD
-  data.nblocks      = nblock;
+  data.nblocks      = nblock-1;
   data.nblocks_info = 'Number of blocks used to compute the PSD';
 
   % Equivalent number of degrees of freedom, based on the estimator given in Welch (1967)
   data.edof      = fun_compute_edof( ww , nfft , lx , overlap ); % NB: ww already contains window information
   data.edof_info = 'Equivalent number of degrees of freedom (Welch, 1967; see also report by Solomon, Jr., 1991)';
-  alpha        = 1-0.95;
-  data.CI      = fix(data.edof)./chi2inv([1-alpha/2 alpha/2],fix(data.edof));
-  data.CI_info = '95% confidence interval';
+  alpha          = 1-0.95;
+  data.CI        = fix(data.edof)./chi2inv([1-alpha/2 alpha/2],fix(data.edof));
+  data.CI_info   = '95% confidence interval';
 end

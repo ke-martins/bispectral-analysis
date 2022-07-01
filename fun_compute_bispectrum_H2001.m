@@ -321,7 +321,7 @@ function [ data ] = fun_compute_bispectrum_H2001( x , fs , nfft , overlap , wind
   % ---------------------- Finalisation ----------------------------
 
   % Number of blocks used to compute PSD
-  data.nblocks      = nblock;
+  data.nblocks      = nblock-1;
   data.nblocks_info = 'Number of blocks used to compute the PSD';
 
   % Equivalent number of degrees of freedom, based on the estimator given in Welch (1967)
