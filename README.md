@@ -7,7 +7,7 @@ Affiliation: UMR 5805 EPOC, CNRS - University of Bordeaux, Allée Geoffroy Saint
 
 Email : kevin.martins@u-bordeaux.fr
 
-Last updated on 2/05/2021
+Last updated on 1 July 2022
 
 Included files:
 
@@ -29,4 +29,7 @@ Included files:
 Each function is commented and referenced when found necessary or appropriate. Currently, no running examples are provided but the information provided in the files header should be sufficient. Feel free to contact me for any question regarding the use of these routines or parts of their implementation.
 
 # Acknowledgements
-This work was undertaken during my postdoctoral fellowship at the University of Bordeaux. Their financial support, through an International Postdoctoral Grant (Idex, nb. 1024R-5030), is therefore greatly acknowledged. Fruitful exchanges with Steve Elgar regarding the bispectral analysis were greatly appreciated. The development of this library was initiated for the manuscript: "Dispersive characteristics of non-linear waves propagating and breaking over a mildly sloping laboratory beach", accepted for publication in Coastal Engineering.
+This work was undertaken during my postdoctoral fellowship at the University of Bordeaux, France. Their financial support, through an International Postdoctoral Grant (Idex, nb. 1024R-5030), is therefore greatly acknowledged. Fruitful exchanges with Steve Elgar regarding the bispectral analysis were greatly appreciated. The development of this library was initiated for the manuscript: "Dispersive characteristics of non-linear waves propagating and breaking over a mildly sloping laboratory beach", published in Coastal Engineering:
+Martins, K., Bonneton, P., & Michallet, H. (2021). Dispersive characteristics of non-linear waves propagating and breaking over a mildly sloping laboratory beach. Coastal Engineering, 167, 103917. 
+Ongoing development is pursued, through the support of the European Union’s Horizon 2020 research and innovation program under the Marie Skłodowska-Curie Grant Agreement 887867 (lidBathy).
+
