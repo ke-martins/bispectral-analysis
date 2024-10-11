@@ -5,7 +5,7 @@ Author: Kévin Martins
 
 Affiliation: UMR 5805 EPOC, CNRS - University of Bordeaux, Allée Geoffroy Saint-Hilaire, F-33615 Pessac, France
 
-Email : kevin.martins@u-bordeaux.fr
+Email : kevin.martins@cnrs.fr
 
 Last updated on 1 July 2022
 
