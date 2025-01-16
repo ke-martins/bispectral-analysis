@@ -1,18 +1,20 @@
 function [ Snl ] = fun_compute_Snl( h0 , f , B )
-% Compute Snl following Herbers and Burton (1997), see Eq. 14
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Compute non-linear 'Snl' term for the energy transfer between triads following Herbers and Burton (1997), see their Eq. 14.
 %
 % Inputs:
-%   h0 - local water depth
-%   f  - frequency array 
+%   h0 - local water depth [m]
+%   f  - frequency array [Hz]
 %   B  - power bispectrum [m^3], not a density
 %
-% Notes: f, P and B arrays are two-sided in regards to f; f should be centered around 0 Hz
+% Notes: f and B arrays are two-sided in regards to f; f should be centered around 0 Hz
 %
 % Outputs: 
 %   Snl - source term for non-linear energy transfers between triads [m^2], size of input f
 %
-% March 31, 2020
-% Kévin Martins - kevin.martins@u-bordeaux.fr
+% Last update on January 15, 2025
+% Kévin Martins - kevin.martins@cnrs.fr
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
   % Initialisation
   Snl  = NaN*f;
@@ -31,16 +33,13 @@ function [ Snl ] = fun_compute_Snl( h0 , f , B )
     for ff = 1:length(f)
       ifr3 = nmid + (fi-nmid) - (ff-nmid);
       if (ifr3 >= 1) && (ifr3 <= length(f))
-        sumtmp = sumtmp + W(f(fi),h0)*imag(B(ff,ifr3))*df;
+        sumtmp = sumtmp + (3*pi*f(fi)/h0)*imag(B(ff,ifr3))*df;
       end
     end
     
     % Non-linear Source term
     Snl(fi) = sumtmp;
   end
-end
 
-function res = W(f,h)
-  res = (3 * pi * f) / h;
+  return
 end
-  
