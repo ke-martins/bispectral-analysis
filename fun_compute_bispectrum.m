@@ -1,15 +1,16 @@
-function [ data ] = fun_compute_bispectrum( x , fs , nfft , overlap , wind , mg )
-% Estimation of the bispectrum [m^3] using a direct fft-based approach.
+function [ data ] = fun_compute_bispectrum( x , fs , nfft , overlap , wind )
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Direct FFT-based estimation of surface elevation bispectrum [m^3].
+% Here, the bicoherence is not computed, use e.g. fun_compute_bispectrum_H2001 if needed.
 %
-%	Inputs:
-%	  x       - signal
-%	  fs      - sampling frequency
-%	  nfft    - fft length [default = 128]
-%	  overlap - percentage overlap [default = 50]
-%	  wind    - Type of window for tappering ('rectangular', 'hann' or 'kaiser')
-%	  mg      - length of spectral bandwith over which to merge
+% Inputs:
+%   x       - Detrended free surface elevation signal [m]
+%   fs      - sampling frequency [Hz]
+%   nfft    - fft length [default = 256]
+%   overlap - percentage overlap (typical is 50%, 75% optimises edof)
+%   wind    - Type of window for tappering ('rectangular', 'hann' or 'kaiser')
 %
-%	Outputs: 
+% Outputs: 
 %   data    - a self-explanatory data structure containing bispectra products
 %             For more details, see through the code, where the data is stored.
 %
@@ -18,15 +19,15 @@ function [ data ] = fun_compute_bispectrum( x , fs , nfft , overlap , wind , mg 
 %                      B(f1,f2) = E[ A(f1) A(f2) A*(f1 + f2) ],
 %       where A are the complex Fourier coefficients, A* denotes the conjugate 
 %       of A and E is the expected value.
-%   2 - Merging over frequencies is optional; if desired, enter a frequency 
-%       bandwidth in mg. Otherwise, leave it as [].
+%   2 - Merging over frequencies is no longer optional, as it leads to unrealistic bicoherences (>1)
 %
-% September 10, 2020
-% Kévin Martins - kevin.martins@u-bordeaux.fr
+% January 15, 2025
+% Kévin Martins - kevin.martins@cnrs.fr
 %
 % Acknowledgments:
 %   Bits of this routine were inspired by codes from the hosa library and those
 %   provided by Anouk de Bakker.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   % --------------------- Various parameters -------------------------
   % notes: 
@@ -34,18 +35,12 @@ function [ data ] = fun_compute_bispectrum( x , fs , nfft , overlap , wind , mg 
   %        centered around 0.
 
   lx = length(x); x = x(:);
-  if (exist('nfft') ~= 1)            nfft = 128; end
-  if (exist('overlap') ~= 1)      overlap = 50;  end
+  if (exist('nfft') ~= 1)           nfft = 256; end
+  if (exist('overlap') ~= 1)      overlap = 50; end
   if (isempty(wind) == 1)
     wind = 'rectangular';
   else
     wind = lower(wind);
-  end
-  if (isempty(mg) == 1)
-    merge = 0;
-  else
-    merge = 1;
-    mg = mg - rem(mg+1,2); 
   end
   overlap = min(99,max(overlap,0));
 
@@ -258,67 +253,20 @@ function [ data ] = fun_compute_bispectrum( x , fs , nfft , overlap , wind , mg 
   data.As_info   = 'Wave asymmetry [-], computed following Elgar and Guza (1985, JFM)';
 
 
-  % ------------------- Merging over frequencies -------------------
-
-  if merge
-    % Initialization
-    mg   = mg - rem(mg+1,2);
-    mm   = (mg-1)/2;                                              % Half-window for averaging
-    nmid = nfft/2 + 1;                                            % Middle frequency (f = 0)
-    ifrm = [ fliplr(nmid:-mg:1+mm) , nmid+mg : mg : nfft+1-mm ]'; % Frequency indices
-    Bm   = zeros( length(ifrm) , length(ifrm) );                  % Merged bispectrum (unit m^3)
-    Pm   = zeros( length(ifrm) , 1 );                             % Merged PSD (unit m^2)
-    
-    % Remove half of diagonals
-    for ff = 1:length(ifreq)
-      data.B(ff,ff) = 0.5*data.B(ff,ff);
-    end
-    
-    % Loop over frequencies
-    for jfr1 = 1:length(ifrm)
-      % Rows
-      ifb1 = ifrm(jfr1); % mid of jfr1-merge-block
-      
-      % PSD
-      Pm(jfr1) = sum(data.P(ifb1-mm:ifb1+mm));
-      
-      % Columns for bispectrum
-      for jfr2 = 1:length(ifrm)
-        ifb2 = ifrm(jfr2); % mid of jfr2-merge-block
-        Bm(jfr1,jfr2)    = sum(sum(data.B(ifb1-mm:ifb1+mm,ifb2-mm:ifb2+mm)));
-      end
-    end
-    
-    % Updating arrays
-    data.f = freqs(ifrm);
-    data.df = abs(data.f(2)-data.f(1));
-    data.B = Bm;
-    data.P = Pm;
-  end
-
-
   % ---------------------- Finalisation ----------------------------
 
   % Number of blocks used to compute PSD
-  data.nblocks      = nblock-1;
+  data.nblocks      = nblock;
   data.nblocks_info = 'Number of blocks used to compute the PSD';
 
-  % Equivalent number of degrees of freedom, based on the estimator given in Welch (1967)
+  % Equivalent number of degrees of freedom, based on the approximation of Percival and Walden (1993)
   data.edof      = fun_compute_edof( ww , nfft , lx , overlap ); % NB: ww already contains window information
   data.edof_info = 'Equivalent number of degrees of freedom in the PSD (Welch, 1967; see also report by Solomon, Jr., 1991)';
-
-  % Update edof if frequency merging was performed
-  % See Elgar (1987) for a discussion on the bias introduced to edof in that case
-  if merge
-    data.edof = data.edof*mg;
-  end
 
   % Computing the 95% confidence interval of the PSD
   alpha          = 1-0.95;
   data.P_CI      = fix(data.edof)./chi2inv([1-alpha/2 alpha/2],fix(data.edof));
   data.P_CI_info = '95% confidence interval of the PSD';
 
-  % b95 (Haubrich, 1965)
-  data.b95      = sqrt(6/data.edof);
-  data.b95_info = '95% significance level on zero bicoherence: sqrt(6/edof) (Haubrich, 1965)';
+  return
 end

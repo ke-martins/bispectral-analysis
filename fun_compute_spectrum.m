@@ -1,19 +1,21 @@
-function [ data ] = fun_compute_spectrum ( x , fs , nfft , overlap , wind )
-% Estimation of bispectrum [m^3] using a direct fft-based approach.
+function [ data ] = fun_compute_spectrum( x , fs , nfft , overlap , wind )
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Direct FFT-based estimation of surface elevation spectral densities [m^2/Hz].
 %
-%	Inputs:
-%	  x       - signal
-%	  fs      - sampling frequency
-%	  nfft    - fft length [default = 128]
-%	  overlap - percentage overlap [default = 50]
-%	  wind    - Type of window for tappering ('rectangular', 'hann' or 'kaiser')
+% Inputs:
+%   x       - Detrended free surface elevation signal [m]
+%   fs      - sampling frequency [Hz]
+%   nfft    - bloc length for the FFT [default = 256]
+%   overlap - percentage overlap (typical is 50%, 75% optimises edof)
+%   wind    - Type of window for tappering ('rectangular', 'hann' or 'kaiser')
 %
-%	Outputs: 
-%   data    - a self-explanatory data structure containing spectra products
+% Outputs: 
+%   data    - a self-explanatory MATLAB data structure containing spectral products
 %             For more details, see through the code, where the data is stored.
 %
 % September 10, 2020
-% Kévin Martins - kevin.martins@u-bordeaux.fr
+% Kévin Martins - kevin.martins@cnrs.fr
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   % --------------------- Various parameters -------------------------
   % Notes: 
@@ -21,9 +23,13 @@ function [ data ] = fun_compute_spectrum ( x , fs , nfft , overlap , wind )
   %        centered around 0.
 
   lx = length(x); x = x(:);
-  if (exist('nfft') ~= 1)            nfft = 128; end
-  if (exist('overlap') ~= 1)      overlap = 50;  end
-  if (isempty(wind) == 1)            wind = 'rectangular'; end
+  if or(exist('nfft') ~= 1,nfft>numel(x))  nfft = 256; end
+  if (exist('overlap') ~= 1)             overlap = 50; end
+  if (isempty(wind) == 1)
+    wind = 'rectangular';
+  else
+    wind = lower(wind);
+  end
   overlap = min(99,max(overlap,0));
 
   nfft     = nfft - rem(nfft,2);
@@ -192,13 +198,15 @@ function [ data ] = fun_compute_spectrum ( x , fs , nfft , overlap , wind )
   data.E = 2*data.E(nmid:end)/data.df;
   
   % Number of blocks used to compute PSD
-  data.nblocks      = nblock-1;
+  data.nblocks      = nblock;
   data.nblocks_info = 'Number of blocks used to compute the PSD';
 
-  % Equivalent number of degrees of freedom, based on the estimator given in Welch (1967)
-  data.edof      = fun_compute_edof( ww , nfft , lx , overlap ); % NB: ww already contains window information
-  data.edof_info = 'Equivalent number of degrees of freedom (Welch, 1967; see also report by Solomon, Jr., 1991)';
-  alpha          = 1-0.95;
-  data.CI        = fix(data.edof)./chi2inv([1-alpha/2 alpha/2],fix(data.edof));
-  data.CI_info   = '95% confidence interval';
+  % Equivalent number of degrees of freedom, based on the approximation of Percival and Walden (1993)
+  data.edof    = fun_compute_edof( ww , nfft , lx , overlap ); % NB: ww already contains window information
+  data.edof_info = 'Equivalent number of degrees of freedom (Percival and Walden, 1993; their Eq. 292b)';
+  alpha        = 1-0.95;
+  data.CI      = fix(data.edof)./chi2inv([1-alpha/2 alpha/2],fix(data.edof));
+  data.CI_info = '95% confidence interval';
+
+  return
 end

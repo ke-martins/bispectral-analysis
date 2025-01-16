@@ -1,15 +1,15 @@
-function [ data ] = fun_compute_bispectrum_H1982( x , fs , nfft , overlap , wind , mg )
-% Estimation of bispectrum products using a direct fft-based approach.
+function [ data ] = fun_compute_bispectrum_H1982( x , fs , nfft , overlap , wind )
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Direct FFT-based estimation of surface elevation bispectrum [m^3].
 %
-%	Inputs:
-%	  x       - signal
-%	  fs      - sampling frequency
-%	  nfft    - fft length [default = 128]
-%	  overlap - percentage overlap [default = 50]
-%	  wind    - Type of window for tappering ('rectangular', 'hann' or 'kaiser')
-%	  mg      - length of spectral bandwith over which to merge
+% Inputs:
+%   x       - Detrended free surface elevation signal [m]
+%   fs      - sampling frequency [Hz]
+%   nfft    - fft length [default = 256]
+%   overlap - percentage overlap (typical is 50%, 75% optimises edof)
+%   wind    - Type of window for tappering ('rectangular', 'hann' or 'kaiser')
 %
-%	Outputs: 
+% Outputs: 
 %   data    - a self-explanatory data structure containing bispectra products
 %             For more details, see through the code, where the data is stored.
 %
@@ -22,16 +22,15 @@ function [ data ] = fun_compute_bispectrum_H1982( x , fs , nfft , overlap , wind
 %          b(f1,f2) = |B(f1,f2)| / sqrt(E[|A(f1)|^2] E[A(f2)|^2] E[|A(f1 + f2)|^2])
 %       Compared to the original version, the absolute value is applied. 
 %       This is used by e.g., Haubrich (1965), Herbers et al. (1994).
-%   3 - Merging over frequencies is optional; if desired, enter a frequency 
-%       bandwidth in mg. Otherwise, leave it as []. Bicoherence and biphase are
-%       recomputed from the merged arrays.       
+%   3 - Merging over frequencies is no longer optional, as it leads to unrealistic bicoherences (>1)
 %
-% September 10, 2020
-% Kévin Martins - kevin.martins@u-bordeaux.fr
+% January 15, 2025
+% Kévin Martins - kevin.martins@cnrs.fr
 %
 % Acknowledgments:
 %   Bits of this routine were inspired by codes from the hosa library and those
 %   provided by Anouk de Bakker.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   % --------------------- Various parameters -------------------------
   % notes: 
@@ -39,14 +38,12 @@ function [ data ] = fun_compute_bispectrum_H1982( x , fs , nfft , overlap , wind
   %        centered around 0.
 
   lx = length(x); x = x(:);
-  if (exist('nfft') ~= 1)            nfft = 128; end
-  if (exist('overlap') ~= 1)      overlap = 50;  end
-  if (isempty(wind) == 1)            wind = 'rectangular'; end
-  if (isempty(mg) == 1)
-    merge = 0;
+  if or(exist('nfft') ~= 1,nfft>numel(x))  nfft = 256; end
+  if (exist('overlap') ~= 1)            overlap = 50;  end
+  if (isempty(wind) == 1)
+    wind = 'rectangular';
   else
-    merge = 1;
-    mg = mg - rem(mg+1,2); 
+    wind = lower(wind);
   end
   overlap = min(99,max(overlap,0));
 
@@ -223,14 +220,12 @@ function [ data ] = fun_compute_bispectrum_H1982( x , fs , nfft , overlap , wind
   % Expected values
   data.B = data.B / nblock; data.B(~ifm3val) = 0;
   data.P = data.P / nblock;
-  
+
   % Computing bicoherence and biphase
-  if ~merge
-    data.Bic = abs(data.B) ./ sqrt( data.P(ifr1) .* data.P(ifr2) .* data.P(ifr3) );
-    data.Bic_info  = 'Bicoherence [-]';
-    data.Bip = atan2(imag(data.B),real(data.B));
-    data.Bip_info  = 'Biphase [-]';
-  end
+  data.Bic = abs(data.B) ./ sqrt( data.P(ifr1) .* data.P(ifr2) .* data.P(ifr3) );
+  data.Bic_info  = 'Bicoherence [-]';
+  data.Bip = atan2(imag(data.B),real(data.B));
+  data.Bip_info  = 'Biphase [-]';
   clear ifr1 ifr2 ifr3
 
 
@@ -266,70 +261,15 @@ function [ data ] = fun_compute_bispectrum_H1982( x , fs , nfft , overlap , wind
   data.As_info   = 'Wave asymmetry [-], computed following Elgar and Guza (1985, JFM)';
 
 
-  % ------------------- Merging over frequencies -------------------
-
-  if merge
-    % Initialization
-    mg   = mg - rem(mg+1,2);
-    mm   = (mg-1)/2;                                              % Half-window for averaging
-    nmid = nfft/2 + 1;                                            % Middle frequency (f = 0)
-    ifrm = [ fliplr(nmid:-mg:1+mm) , nmid+mg : mg : nfft+1-mm ]'; % Frequency indices
-    Bm   = zeros( length(ifrm) , length(ifrm) );                  % Merged bispectrum (unit m^3)
-    Pm   = zeros( length(ifrm) , 1 );                             % Merged PSD (unit m^2)
-    
-    % Loop over frequencies
-    for jfr1 = 1:length(ifrm)
-      % Rows
-      ifb1 = ifrm(jfr1); % mid of jfr1-merge-block
-      
-      % PSD
-      Pm(jfr1) = sum(data.P(ifb1-mm:ifb1+mm));
-      
-      % Columns for bispectrum
-      for jfr2 = 1:length(ifrm)
-        ifb2 = ifrm(jfr2); % mid of jfr2-merge-block
-        Bm(jfr1,jfr2)    = sum(sum(data.B(ifb1-mm:ifb1+mm,ifb2-mm:ifb2+mm)));
-      end
-    end
-    
-    % Updating arrays
-    data.f = freqs(ifrm);
-    data.df = abs(data.f(2)-data.f(1));
-    data.B = Bm;
-    data.P = Pm;
-    
-    % Dealing with f1 + f2 = f3 indices
-    [ ifr1 , ifr2 ] = meshgrid( 1:length(data.f) , 1:length(data.f) );
-    nmid = (length(data.f)-1)/2 + 1;
-    ifr3 = nmid + (ifr1-nmid) + (ifr2-nmid);
-    ifm3val = ((ifr3 >= 1) & (ifr3 <= length(data.f))); ifr3(~ifm3val) = 1;
-    
-    % Computing bicoherence
-    data.Bic      = abs(data.B) ./ sqrt( data.P(ifr1) .* data.P(ifr2) .* data.P(ifr3) ); data.Bic(~ifm3val) = 0;
-    data.Bic_info = 'Bicoherence [-]';
-    clear ifr1 ifr2 ifr3
-   
-    % Computing biphase
-    data.Bip = atan2(imag(data.B),real(data.B));
-    data.Bip_info  = 'Biphase [-]';
-  end
-
-
   % ---------------------- Finalisation ----------------------------
 
   % Number of blocks used to compute PSD
-  data.nblocks      = nblock-1;
+  data.nblocks      = nblock;
   data.nblocks_info = 'Number of blocks used to compute the PSD';
 
-  % Equivalent number of degrees of freedom, based on the estimator given in Welch (1967)
+  % Equivalent number of degrees of freedom, based on the approximation of Percival and Walden (1993)
   data.edof      = fun_compute_edof( ww , nfft , lx , overlap ); % NB: ww already contains window information
-  data.edof_info = 'Equivalent number of degrees of freedom in the PSD (Welch, 1967; see also report by Solomon, Jr., 1991)';
-
-  % Update edof if frequency merging was performed
-  % See Elgar (1987) for a discussion on the bias introduced to edof in that case
-  if merge
-    data.edof = data.edof*mg;
-  end
+  data.edof_info = 'Equivalent number of degrees of freedom (Percival and Walden, 1993; their Eq. 292b)';
 
   % Computing the 95% confidence interval of the PSD
   alpha          = 1-0.95;
@@ -339,4 +279,6 @@ function [ data ] = fun_compute_bispectrum_H1982( x , fs , nfft , overlap , wind
   % b95 (Haubrich, 1965)
   data.b95      = sqrt(6/data.edof);
   data.b95_info = '95% significance level on zero bicoherence: sqrt(6/edof) (Haubrich, 1965)';
+
+  return
 end
