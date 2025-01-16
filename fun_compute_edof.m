@@ -1,66 +1,39 @@
-function [ v ] = fun_compute_edof( w , M , N , overlap )
+function [ v ] = fun_compute_edof( w , Ns , N , overlap )
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Computes the spectral estimate effective degrees of freedom, following Percival and Walden.
+%
 % Inputs:
 %   w       - window (windowed timeseries of FFT length)
-%   M       - FFT length 
+%   Ns      - bloc length for the FFT
 %   N       - total number of points
 %   overlap - overlap in % used to compute number of new points in each FFT
 %
 % Outputs:
-%   v       - equivalent degrees of freedom in a PSD estimate
+%   v       - effective degrees of freedom in a PSD estimate, following Percival and Walden (1993, their Eq. 292b)
 %
-% Notes:
-%   This uses the recommendations from the report "PSD Computations Using Welch’s Method" 
-%   written by Otis M. Solomon, Jr., in 1991 (Sandia Report, SAND91-1533 UC-706).
-%   It uses the concept of equivalent degrees of freedom introduced in the original paper by Peter D. Welch:
-%   "The use of fast Fourier transform for the estimation of power spectra: A method based on time averaging
-%   over short, modified periodograms",  IEEE Transactions on Audio and Electroacoustics, 15 (2), 1967. 
-%
-% September 10, 2020
-% Kévin Martins - kevin.martins@u-bordeaux.fr
+% September 25, 2024
+% Kévin Martins - kevin.martins@cnrs.fr
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  % Initialisation
-  s = 0.0;
-  
-  % Number of new points in each FFT
-  S = fix(M*(100-overlap)/100);
-  k = 1 + (N - M)/S;
-  
-  % Loop over lag of window correlation
-  for i = 1:k-1
-    if (i*S < M-1)
-      s = s + (k-i)/k * fun_compute_rho( w , M , i , overlap );
+  % Appropriate normalisation
+  w = w/sqrt(sum(w.^2));
+
+  % Dealing with overlap
+  n  = fix((100-overlap)/100*Ns);
+
+  % Number of blocks
+  Nb = floor((N-Ns)/n+1);
+
+  % Computing effective degrees of freedom
+  sumh = [];
+  for m = 1:Nb-1
+    if(Ns-m*n>=1)
+      sumh(m) = (1-m/Nb)*abs(sum(w(1:Ns-m*n).*w(1+m*n:Ns)))^2;
     end
   end
+  denom = 1+2*sum(sumh);
+  v = 2*Nb/denom;
   
-  % Equivalent degrees of freedom
-  v = 2.0*k / (1.0 + 2.0*s);
-end
-
-%% fun_compute_rho computes the window autocorrelation function 
-function [ r ] = fun_compute_rho( w , M , k , overlap )
-% Inputs:
-%   w       - window
-%   M       - FFT length 
-%   k       - lag  of  window  correlation 
-%   overlap - overlap in % used to compute number of new points in each FFT 
-%
-% Outputs:
-%   r       - autocorrelation of window
-
-  % Initialisation
-  r = 0.0; 
-  Pw = 0.0;
-  
-  % Number of new points in each FFT
-  S = fix(M*(100-overlap)/100);
-  
-  % Calculation of window autocorrelation
-  for i = 1:M
-    Pw = Pw + w(i)*w(i)/M;
-  end
-  for i =1:M-k*S-1
-    r = r + w(i)*w(i+k*S);
-  end
-  r = sqrt(r/(M*Pw));
+  return
 end
 
