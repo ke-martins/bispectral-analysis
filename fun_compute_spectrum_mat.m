@@ -23,7 +23,7 @@ function [ data ] = fun_compute_spectrum_mat( x , fs , overlap , wind )
 
   % --------------------- Various parameters -------------------------
 
-  if nargin < 3, error('check inputs')
+  if nargin < 3, error('check inputs'); end
   if or(isempty(wind) == 1,nargin < 4)
     wind = 'rectangular';
   else
