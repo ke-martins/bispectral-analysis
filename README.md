@@ -201,6 +201,7 @@ kevin.martins@cnrs.fr
   | `f`       | double | frequency array [Hz]                                            |  
   | `P`       | double | power spectrum [m^2], not a density                       |
   | `B`       | complex | power bispectrum [m^3], not a density       |
+  | `fc`      | double | optional, cutoff frequency [Hz], in case the raw timeseries was noisy     |
 
   **Outputs**:  
   &nbsp;&nbsp;`gamma_fr` - frequency dispersion term, corresponding to the original term $`\beta_{fr}/h`$, size of input `f`.  

@@ -14,7 +14,7 @@ function [ gamma_fr , gamma_fr2 , gamma_am ] = fun_compute_krms_terms( f , P , B
 %   f  - frequency array [Hz]
 %   P  - power spectrum [m^2], not a density
 %   B  - power bispectrum [m^3], not a density
-%   fc - cutoff frequency [Hz], in case the raw timeseries was noisy
+%   fc - optional cutoff frequency [Hz], in case the raw timeseries was noisy
 %
 % Outputs: 
 %   gamma_fr  - frequency dispersion term, corresponding to beta_fr/h, size of input f
