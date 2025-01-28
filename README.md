@@ -1,4 +1,4 @@
-# bispectral-analysis: a MATLAB tooblox for ocean wave bispectral analysis 🌊
+# bispectral-analysis: a MATLAB toolbox for ocean wave bispectral analysis 🌊
 
 Welcome to this short documentation of bispectral-analysis, a MATLAB library designed for spectral and bispectral analyses of free surface elevation timeseries associated with ocean waves. Initially created for computing the bispectrum of the free surface elevation, it has now evolved to incorporate other relevant functions, broadening the range of applications (wave dispersive properties, non-linear energy transfers between triads etc). A list of relevant publications that used this toolbox is given at the bottom of this page. Although this toolbox was intended for surface elevation datasets, it can be used for other signals bearing in mind the provided units would be wrong.
 
