@@ -40,28 +40,6 @@ kevin.martins@cnrs.fr
 </details>
 
 <details>
-  <summary>📄 fun_compute_spectrum_mat.m</summary>  
-  <br>  
-
-  **Description**:  
-  Direct FFT-based estimation of surface elevation spectral densities [m²/Hz].  
-  The function is written for data organised by blocks in a matrix, which can be handy to accomodate for gappy series (e.g., lidar-derived). The first dimension of this matrix corresponds to the nfft, i.e. the length of our timeseries block. Overlapping (if any) thus has already been taken care of, and the input 'overlap' is only used to compute the corresponding equivalent dof more precisely. 
-
-  **Inputs**:  
-
-  | Name      | Type   | Description                                                      |
-  |-----------|--------|------------------------------------------------------------------|
-  | `x`       | double | Detrended free surface elevation signal [m], organised in a matrix of dimensions nfft x number of blocks |  
-  | `fs`      | int    | Sampling frequency [Hz]                                         |  
-  | `overlap` | int    | Percentage overlap                                             |
-  | `wind`    | char   | Type of window for tapering ('rectangular', 'hann', or 'kaiser') |
-
-  **Outputs**:  
-  &nbsp;&nbsp;Returns `data`, a self-explanatory MATLAB data structure containing spectral products.
-
-</details>
-
-<details>
   <summary>📄 fun_compute_bispectrum.m</summary>  
   <br>  
 
@@ -79,32 +57,6 @@ kevin.martins@cnrs.fr
   | `fs`      | int    | Sampling frequency [Hz]                                         |  
   | `nfft`    | int    | Block length for the FFT (default = 256)                        |
   | `overlap` | int    | Percentage overlap (typical is 50%, 75% optimises edof)                     |
-  | `wind`    | char   | Type of window for tapering ('rectangular', 'hann', or 'kaiser') |
-
-  **Outputs**:  
-  &nbsp;&nbsp;Returns `data`, a self-explanatory MATLAB data structure containing spectral and bispectral products.
-
-</details>
-
-<details>
-  <summary>📄 fun_compute_bispectrum_mat.m</summary>  
-  <br>  
-
-  **Description**:  
-  Direct FFT-based estimation of surface elevation bispectrum [m^3].  
-  The function is written for data organised by blocks in a matrix, which can be handy to accomodate for gappy series (e.g., lidar-derived). The first dimension of this matrix corresponds to the nfft, i.e. the length of our timeseries block. Overlapping (if any) thus has already been taken care of, and the input 'overlap' is only used to compute the corresponding equivalent dof more precisely.  
-  We here use the definition by Kim and Powers (1986):  
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$`B(f_1,f_2) = E\left[ A(f_1) A(f_2) A^*(f_1 + f_2) \right]`$,  
-  where $`A`$ are the complex Fourier coefficients, $`A^*`$ denotes the conjugate of $`A`$ and $`E`$ is the expected value. In this function, the bicoherence is not computed, as we wish to keep a light version, and it is not always needed. If needed, please use e.g. fun_compute_bispectrum_H2001. The option to frequency-merge bispectral estimates is no longer optional as we consider it not appropriate, since it leads to unrealistic bicoherence >1.
-
-  **Inputs**:  
-
-  | Name      | Type   | Description                                                      |
-  |-----------|--------|------------------------------------------------------------------|
-  | `x`       | double | Detrended free surface elevation signal [m], organised in a matrix of dimensions nfft x number of blocks | 
-  | `fs`      | int    | Sampling frequency [Hz]                                         |  
-  | `nfft`    | int    | Block length for the FFT (default = 256)                        |
-  | `overlap` | int    | Percentage overlap                                             |
   | `wind`    | char   | Type of window for tapering ('rectangular', 'hann', or 'kaiser') |
 
   **Outputs**:  
