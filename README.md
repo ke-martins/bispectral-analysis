@@ -4,7 +4,7 @@ Welcome to this short documentation of bispectral-analysis, a MATLAB library des
 
 <strong>Latest updates:</strong>  
 <sub><sup>:arrow_forward:</sup></sub> *(Jan. 2025)*
-bispectral-analysis v2: new example provided; updates on edof computation; remove (unphysical) merging option; new function for matrix data, useful to accommodate for gappy data (e.g., lidars).  
+bispectral-analysis v2: new example provided; updates on edof computation; remove (unphysical) merging option; fix bugs in function computing krms terms.  
 <sub><sup>:arrow_forward:</sup></sub> *(May. 2021)*
 bispectral-analysis v1: first release of the library, and tag version; stable and widely tested (example to be added).
 
